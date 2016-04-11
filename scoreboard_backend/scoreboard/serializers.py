@@ -30,7 +30,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     uuid = serializers.CharField(write_only=True)
-    avatar = serializers.ImageField(default='', many=False, required=False)
+    avatar = serializers.ImageField(default='', required=False)
 
     class Meta:
         model = Player

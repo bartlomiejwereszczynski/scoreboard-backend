@@ -1,8 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from .models import Player, Mobile, Match, Goal
-from .serializers import PlayerSerializer, ProfileSerializer, GoalSerializer, MatchSerializer
+from .serializers import PlayerSerializer, ProfileSerializer, GoalSerializer, MatchSerializer, ConfirmSerializer
 
 
 # Create your views here.
@@ -38,3 +39,12 @@ class MatchViewSet(viewsets.ModelViewSet):
             match = get_object_or_404(Match, pk=pk)
         serializer = MatchSerializer(match)
         return Response(serializer.data)
+
+    @detail_route(methods=['post'])
+    def confirm(self, request, pk=None, **kwargs):
+        match = self.get_object()
+        serializer = ConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(match=match)
+
+        return Response(MatchSerializer(instance=match).data)

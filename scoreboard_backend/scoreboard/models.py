@@ -34,7 +34,12 @@ class Team(models.Model):
         return "Red: {}, {}; Blue: {}, {}".format(self.red_1, self.red_2, self.blue_1, self.blue_2)
 
     def all_confirmed(self):
-        return self.red_1_confirmed and self.red_2confirmed and self.blue_1_confirmed and self.blue_2_confirmed
+        return self.red_1_confirmed and self.red_2_confirmed and self.blue_1_confirmed and self.blue_2_confirmed
+
+    def player_present(self, player_pk):
+        if player_pk is None:
+            return False
+        return player_pk in { self.red_1_id, self.red_2_id, self.blue_1_id, self.blue_2_id }
 
 
 class Match(models.Model):

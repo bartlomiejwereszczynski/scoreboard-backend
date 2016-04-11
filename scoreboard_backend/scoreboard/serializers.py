@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
-from .models import Player, Mobile, Match, Team, Goal
-
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from .models import Player, Mobile, Match, Team, Goal
 
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -25,6 +25,7 @@ class PlayerSerializer(serializers.ModelSerializer):
         rel = getattr(obj, self.position)
         return getattr(rel.first(), team_attr)
 
+
 class MobileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mobile
@@ -41,6 +42,7 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = ('red_1', 'red_2', 'blue_1', 'blue_2', 'red_1_confirmed', 'red_2_confirmed', 'blue_1_confirmed',
                   'blue_2_confirmed')
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     uuid = serializers.CharField(write_only=True)
@@ -59,6 +61,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     team = TeamSerializer(read_only=True)
     pk = serializers.IntegerField(read_only=True)
+
     red_1 = serializers.IntegerField(write_only=True, required=False)
     red_2 = serializers.IntegerField(write_only=True, required=False)
     blue_1 = serializers.IntegerField(write_only=True, required=False)
@@ -69,20 +72,42 @@ class MatchSerializer(serializers.ModelSerializer):
         fields = ('pk', 'team', 'goal_red', 'goal_blue', 'start', 'end', 'state', 'red_1', 'red_2', 'blue_1', 'blue_2')
 
     def save(self, **kwargs):
-        if self.instance is not None and self.instance.state == Match.STATE_WAITING:
-            allowed = ['red_1', 'red_2', 'blue_1', 'blue_2']
-            team = self.instance.team
+        if self.instance is None:
+            return super(MatchSerializer, self).save(**kwargs)
 
-            for key, value in self.validated_data:
-                if key in allowed and getattr(team, key, None) is None:
-                    player = Player.objects.get(pk=value)
-                    setattr(team, key, player)
-                    setattr(team, key + "_confirmed", True)
-                    team.save()
-                    if team.all_confirmed():
-                        self.instance.state = Match.STATE_ACTIVE
-                        self.instance.save()
-                    break
+        if self.instance.state != Match.STATE_WAITING:
+            return self.instance
+
+        allowed = {'red_1', 'red_2', 'blue_1', 'blue_2'}
+        team = self.instance.team
+
+        for key, value in self.validated_data.iteritems():
+            if key not in allowed:
+                continue
+
+            if value == 0:
+                player = None
+                confirmed = False
+            elif team.player_present(value):
+                continue
+            else:
+                player = get_object_or_404(Player, pk=value)
+                confirmed = True
+
+            setattr(team, key, player)
+            setattr(team, key + "_confirmed", confirmed)
+            team.save()
+
+            if team.all_confirmed():
+                self.instance.state = Match.STATE_ACTIVE
+            else:
+                self.instance.state = Match.STATE_WAITING
+
+            self.instance.save()
+
+            break
+
+        return self.instance
 
 
 class GoalSerializer(serializers.ModelSerializer):
@@ -102,3 +127,44 @@ class GoalSerializer(serializers.ModelSerializer):
         match.save()
         goal, _ = Goal.objects.get_or_create(match=match, side=validated_data["side"])
         return goal
+
+
+KNOWN_ROLES = ('red_1', 'red_2', 'blue_1', 'blue_2')
+
+
+class ConfirmSerializer(serializers.Serializer):
+    role = serializers.CharField()
+    action = serializers.CharField()
+
+    def validate_role(self, role):
+        if role not in KNOWN_ROLES:
+            raise ValidationError('Unknown role "{}"'.format(role))
+
+        return role
+
+    def validate_action(self, action):
+        if action not in ('accept', 'reject'):
+            raise ValidationError('Unknown action "{}"'.format(action))
+
+        return action
+
+    def save(self, **kwargs):
+        role = self.validated_data['role']
+        confirm = True if self.validated_data['action'] == 'accept' else False
+
+        match = kwargs.pop('match')
+        team = match.team
+
+        if not confirm:
+            setattr(team, role, None)
+            setattr(team, role + '_confirmed', False)
+        else:
+            setattr(team, role + '_confirmed', True)
+
+        if team.all_confirmed():
+            match.state = Match.STATE_ACTIVE
+        else:
+            match.state = Match.STATE_WAITING
+
+        team.save()
+        match.save()

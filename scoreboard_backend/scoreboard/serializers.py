@@ -30,13 +30,14 @@ class TeamSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     uuid = serializers.CharField(write_only=True)
+    avatar = serializers.ImageField(default='', many=False, required=False)
 
     class Meta:
         model = Player
-        fields = ('pk', 'username', 'uuid')
+        fields = ('pk', 'username', 'avatar', 'uuid')
 
     def create(self, validated_data):
-        player, _ = Player.objects.get_or_create(username=validated_data["username"])
+        player, _ = Player.objects.get_or_create(username=validated_data["username"], avatar=validated_data["avatar"])
         mobile, _ = Mobile.objects.get_or_create(player=player, uuid=validated_data["uuid"])
         return player
 

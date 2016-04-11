@@ -16,11 +16,13 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework import routers, serializers, viewsets
-from scoreboard_backend.scoreboard.views import PlayerViewSet, ProfileViewSet
+from scoreboard_backend.scoreboard.views import PlayerViewSet, ProfileViewSet, GoalViewSet, MatchViewSet
 
 router = routers.DefaultRouter()
 router.register(r'^users', PlayerViewSet)
 router.register(r'^profile', ProfileViewSet, base_name="profile")
+router.register(r'^goal', GoalViewSet, base_name="goal")
+router.register(r'^match', MatchViewSet, base_name="match")
 
 urlpatterns = [
     url(r'^api/v1/', include(router.urls)),

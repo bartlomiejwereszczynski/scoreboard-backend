@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
-from .models import Player, Mobile
-from .serializers import PlayerSerializer, ProfileSerializer
+from .models import Player, Mobile, Match, Goal
+from .serializers import PlayerSerializer, ProfileSerializer, GoalSerializer, MatchSerializer
 
 
 # Create your views here.
@@ -20,3 +20,26 @@ class ProfileViewSet(viewsets.ModelViewSet):
         player = mobile.player
         serializer = PlayerSerializer(player)
         return Response(serializer.data)
+
+
+class GoalViewSet(viewsets.ModelViewSet):
+    queryset = Goal.objects.all()
+    serializer_class = GoalSerializer
+
+    def create(self, request, *args, **kwargs):
+        match = get_object_or_404(Match, state=Match.STATE_ACTIVE)
+        if request["side"] == Goal.SIDE_RED:
+            match.goal_red += 1
+        else:
+            match.goal_blue += 1
+
+        match.save()
+        goal, _ = Goal.objects.get_or_create(match=match, side=request["side"])
+        serializer = GoalSerializer(goal)
+
+        return Response(serializer.data)
+
+
+class MatchViewSet(viewsets.ModelViewSet):
+    queryset = Match.objects.all()
+    serializer_class = MatchSerializer

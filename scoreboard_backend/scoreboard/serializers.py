@@ -37,3 +37,20 @@ class ProfileSerializer(serializers.ModelSerializer):
         player, _ = Player.objects.get_or_create(username=validated_data["username"])
         mobile, _ = Mobile.objects.get_or_create(player=player, uuid=validated_data["uuid"])
         return player
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    team = TeamSerializer()
+
+    class Meta:
+        model = Match
+        fields = ('team', 'goal_red', 'goal_blue', 'start', 'end', 'state')
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    match = MatchSerializer(read_only=True)
+    goal_date = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Goal
+        fields = ('match', 'goal_date', 'side')

@@ -4,9 +4,11 @@ from rest_framework import serializers
 
 
 class PlayerSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(default='')
+
     class Meta:
         model = Player
-        fields = ('pk', 'username')
+        fields = ('pk', 'username', 'avatar')
 
 
 class MobileSerializer(serializers.ModelSerializer):

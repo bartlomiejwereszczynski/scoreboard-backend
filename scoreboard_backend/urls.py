@@ -13,10 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework import routers, serializers, viewsets
+
 from scoreboard_backend.scoreboard.views import PlayerViewSet, ProfileViewSet, GoalViewSet, MatchViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r'^users', PlayerViewSet)
@@ -32,4 +36,4 @@ urlpatterns = [
     # api/users (lista userow do wybory dla frontendu)
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

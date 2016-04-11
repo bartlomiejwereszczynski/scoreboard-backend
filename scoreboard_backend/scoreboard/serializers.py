@@ -68,22 +68,21 @@ class MatchSerializer(serializers.ModelSerializer):
         model = Match
         fields = ('pk', 'team', 'goal_red', 'goal_blue', 'start', 'end', 'state', 'red_1', 'red_2', 'blue_1', 'blue_2')
 
-    def update(self, instance, validated_data):
-        if instance.state == Match.STATE_WAITING:
+    def save(self, **kwargs):
+        if self.instance is not None and self.instance.state == Match.STATE_WAITING:
             allowed = ['red_1', 'red_2', 'blue_1', 'blue_2']
-            team = instance.team
+            team = self.instance.team
 
-            for key, value in validated_data:
+            for key, value in self.validated_data:
                 if key in allowed and getattr(team, key, None) is None:
                     player = Player.objects.get(pk=value)
                     setattr(team, key, player)
                     setattr(team, key + "_confirmed", True)
                     team.save()
                     if team.all_confirmed():
-                        instance.state = Match.STATE_ACTIVE
-                        instance.save()
+                        self.instance.state = Match.STATE_ACTIVE
+                        self.instance.save()
                     break
-        return instance
 
 
 class GoalSerializer(serializers.ModelSerializer):

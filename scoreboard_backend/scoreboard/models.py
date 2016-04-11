@@ -25,6 +25,10 @@ class Team(models.Model):
     red_2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="red_2", blank=True, null=True)
     blue_1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="blue_1", blank=True, null=True)
     blue_2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="blue_2", blank=True, null=True)
+    red_1_confirmed = models.BooleanField(default=False)
+    red_2_confirmed = models.BooleanField(default=False)
+    blue_1_confirmed = models.BooleanField(default=False)
+    blue_2_confirmed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "Red: {}, {}; Blue: {}, {}".format(self.red_1, self.red_2, self.blue_1, self.blue_2)

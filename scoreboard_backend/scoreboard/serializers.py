@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from .models import Player, Mobile, Match, Team, Goal
 
 from rest_framework import serializers
@@ -57,3 +58,13 @@ class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = ('match', 'goal_date', 'side')
+
+    def create(self, validated_data):
+        match = get_object_or_404(Match, state=Match.STATE_ACTIVE)
+        if validated_data["side"] == Goal.SIDE_RED:
+            match.goal_red += 1
+        else:
+            match.goal_blue += 1
+        match.save()
+        goal, _ = Goal.objects.get_or_create(match=match, side=validated_data["side"])
+        return goal

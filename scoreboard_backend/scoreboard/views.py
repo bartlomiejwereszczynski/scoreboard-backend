@@ -26,19 +26,6 @@ class GoalViewSet(viewsets.ModelViewSet):
     queryset = Goal.objects.all()
     serializer_class = GoalSerializer
 
-    def create(self, request, *args, **kwargs):
-        match = get_object_or_404(Match, state=Match.STATE_ACTIVE)
-        if request["side"] == Goal.SIDE_RED:
-            match.goal_red += 1
-        else:
-            match.goal_blue += 1
-
-        match.save()
-        goal, _ = Goal.objects.get_or_create(match=match, side=request["side"])
-        serializer = GoalSerializer(goal)
-
-        return Response(serializer.data)
-
 
 class MatchViewSet(viewsets.ModelViewSet):
     queryset = Match.objects.all()

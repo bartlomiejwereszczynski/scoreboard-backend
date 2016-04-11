@@ -33,6 +33,9 @@ class Team(models.Model):
     def __unicode__(self):
         return "Red: {}, {}; Blue: {}, {}".format(self.red_1, self.red_2, self.blue_1, self.blue_2)
 
+    def all_confirmed(self):
+        return self.red_1_confirmed and self.red_2confirmed and self.blue_1_confirmed and self.blue_2_confirmed
+
 
 class Match(models.Model):
     STATE_ENDED = "ended"

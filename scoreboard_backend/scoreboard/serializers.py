@@ -26,7 +26,8 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ('red_1', 'red_2', 'blue_1', 'blue_2')
+        fields = ('red_1', 'red_2', 'blue_1', 'blue_2', 'red_1_confirmed', 'red_2_confirmed', 'blue_1_confirmed',
+                  'blue_2_confirmed')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -45,10 +46,32 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class MatchSerializer(serializers.ModelSerializer):
     team = TeamSerializer(read_only=True)
+    pk = serializers.IntegerField(read_only=True)
+    red_1 = serializers.IntegerField(write_only=True, required=False)
+    red_2 = serializers.IntegerField(write_only=True, required=False)
+    blue_1 = serializers.IntegerField(write_only=True, required=False)
+    blue_2 = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
         model = Match
-        fields = ('pk', 'team', 'goal_red', 'goal_blue', 'start', 'end', 'state')
+        fields = ('pk', 'team', 'goal_red', 'goal_blue', 'start', 'end', 'state', 'red_1', 'red_2', 'blue_1', 'blue_2')
+
+    def update(self, instance, validated_data):
+        if instance.state == Match.STATE_WAITING:
+            allowed = ['red_1', 'red_2', 'blue_1', 'blue_2']
+            team = instance.team
+
+            for key, value in validated_data:
+                if key in allowed and getattr(team, key, None) is None:
+                    player = Player.objects.get(pk=value)
+                    setattr(team, key, player)
+                    setattr(team, key + "_confirmed", True)
+                    team.save()
+                    if team.all_confirmed():
+                        instance.state = Match.STATE_ACTIVE
+                        instance.save()
+                    break
+        return instance
 
 
 class GoalSerializer(serializers.ModelSerializer):

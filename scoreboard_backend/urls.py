@@ -16,14 +16,18 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework import routers, serializers, viewsets
+from scoreboard_backend.scoreboard.views import PlayerViewSet, ProfileViewSet
 
 router = routers.DefaultRouter()
+router.register(r'^users', PlayerViewSet)
+router.register(r'^profile', ProfileViewSet, base_name="profile")
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
+    url(r'^api/v1/', include(router.urls)),
     # api/bt_confirm
     # api/user_confirm
     # api/user_add
+    # api/users (lista userow do wybory dla frontendu)
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

@@ -13,10 +13,13 @@ class PlayerSerializer(serializers.ModelSerializer):
         fields = ('pk', 'username', 'avatar', 'confirmed')
 
     def __init__(self, *args, **kwargs):
-        self.position = kwargs.pop('position')
+        self.position = kwargs.pop('position', None)
         super(PlayerSerializer, self).__init__(*args, **kwargs)
 
     def get_confirmed(self, obj):
+        if self.position is None:
+            return False
+
         # Hack Hack Hack
         team_attr = self.position + '_confirmed'
         rel = getattr(obj, self.position)

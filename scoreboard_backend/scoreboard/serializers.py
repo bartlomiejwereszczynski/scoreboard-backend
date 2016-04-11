@@ -43,11 +43,11 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class MatchSerializer(serializers.ModelSerializer):
-    team = TeamSerializer()
+    team = TeamSerializer(read_only=True)
 
     class Meta:
         model = Match
-        fields = ('team', 'goal_red', 'goal_blue', 'start', 'end', 'state')
+        fields = ('pk', 'team', 'goal_red', 'goal_blue', 'start', 'end', 'state')
 
 
 class GoalSerializer(serializers.ModelSerializer):

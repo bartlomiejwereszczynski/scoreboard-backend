@@ -43,3 +43,11 @@ class GoalViewSet(viewsets.ModelViewSet):
 class MatchViewSet(viewsets.ModelViewSet):
     queryset = Match.objects.all()
     serializer_class = MatchSerializer
+
+    def retrieve(self, request, pk=None, **kwargs):
+        if pk == "current":
+            match = get_object_or_404(Match, state=Match.STATE_ACTIVE)
+        else:
+            match = get_object_or_404(Match, pk=pk)
+        serializer = MatchSerializer(match)
+        return Response(serializer.data)

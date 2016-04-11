@@ -6,11 +6,21 @@ from rest_framework import serializers
 
 class PlayerSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(default='')
+    confirmed = serializers.SerializerMethodField()
 
     class Meta:
         model = Player
-        fields = ('pk', 'username', 'avatar')
+        fields = ('pk', 'username', 'avatar', 'confirmed')
 
+    def __init__(self, *args, **kwargs):
+        self.position = kwargs.pop('position')
+        super(PlayerSerializer, self).__init__(*args, **kwargs)
+
+    def get_confirmed(self, obj):
+        # Hack Hack Hack
+        team_attr = self.position + '_confirmed'
+        rel = getattr(obj, self.position)
+        return getattr(rel.first(), team_attr)
 
 class MobileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,16 +29,15 @@ class MobileSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    red_1 = PlayerSerializer(many=False, required=False)
-    red_2 = PlayerSerializer(many=False, required=False)
-    blue_1 = PlayerSerializer(many=False, required=False)
-    blue_2 = PlayerSerializer(many=False, required=False)
+    red_1 = PlayerSerializer(many=False, required=False, position='red_1')
+    red_2 = PlayerSerializer(many=False, required=False, position='red_2')
+    blue_1 = PlayerSerializer(many=False, required=False, position='blue_1')
+    blue_2 = PlayerSerializer(many=False, required=False, position='blue_2')
 
     class Meta:
         model = Team
         fields = ('red_1', 'red_2', 'blue_1', 'blue_2', 'red_1_confirmed', 'red_2_confirmed', 'blue_1_confirmed',
                   'blue_2_confirmed')
-
 
 class ProfileSerializer(serializers.ModelSerializer):
     uuid = serializers.CharField(write_only=True)

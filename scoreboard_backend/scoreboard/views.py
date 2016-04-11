@@ -33,7 +33,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None, **kwargs):
         if pk == "current":
-            match = get_object_or_404(Match, state=Match.STATE_ACTIVE)
+            match = get_object_or_404(Match, state__in=[Match.STATE_ACTIVE, Match.STATE_WAITING])
         else:
             match = get_object_or_404(Match, pk=pk)
         serializer = MatchSerializer(match)

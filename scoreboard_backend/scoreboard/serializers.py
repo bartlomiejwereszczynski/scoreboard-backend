@@ -156,15 +156,18 @@ class ConfirmSerializer(serializers.Serializer):
         team = match.team
 
         if not confirm:
+            # You can't quit a match
+            if match.state != Match.STATE_WAITING:
+                return match
+
             setattr(team, role, None)
             setattr(team, role + '_confirmed', False)
+            match.state = Match.STATE_WAITING
         else:
             setattr(team, role + '_confirmed', True)
 
         if team.all_confirmed():
             match.state = Match.STATE_ACTIVE
-        else:
-            match.state = Match.STATE_WAITING
 
         team.save()
         match.save()

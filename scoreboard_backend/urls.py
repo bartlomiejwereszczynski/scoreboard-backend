@@ -19,8 +19,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework import routers, serializers, viewsets
 
-from scoreboard_backend.scoreboard.views import PlayerViewSet, ProfileViewSet, GoalViewSet, MatchViewSet
-
+from scoreboard_backend.scoreboard.views import PlayerViewSet, ProfileViewSet, GoalViewSet, MatchViewSet, index
 
 router = routers.DefaultRouter()
 router.register(r'^users', PlayerViewSet)
@@ -29,6 +28,7 @@ router.register(r'^goal', GoalViewSet, base_name="goal")
 router.register(r'^match', MatchViewSet, base_name="match")
 
 urlpatterns = [
+    url(r'^$', index),
     url(r'^api/v1/', include(router.urls)),
     # api/bt_confirm
     # api/user_confirm

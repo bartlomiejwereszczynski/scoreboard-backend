@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scoreboard</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script type="application/javascript">
+(function(){
+    angular.module('scoreboard', []);
+    angular.module('scoreboard').controller('ScoreboardCtrl',ScoreboardCtrl);
+    ScoreboardCtrl.$inject = ['$scope','$http'];
+    function ScoreboardCtrl($scope, $http){
+        activate();
+        function activate(){
+            setInterval(fetchMatch,1000);
+        }
+        function fetchMatch(){
+            $http.get('/api/v1/match/current/').then(function(response){
+                $scope.response = response.data;
+            })
+        }
+    }
+})()
+</script>
+</head>
+<body ng-app="scoreboard">
+
+<div class="container" ng-controller="ScoreboardCtrl">
+    <h3>{{response.state}}</h3>
+    <h1>{{ response.goal_red}} : {{ response.goal_blue }}</h1>
+    <div style="width:50%">
+        <ol>
+            <li><img ng-if="response.team.red_1.avatar" ng-src="{{response.team.red_1.avatar}}" style="max-width:50px; max-height:50px">
+                {{response.team.red_1.username}}
+            </li>
+            <li><img ng-if="response.team.red_2.avatar" ng-src="{{response.team.red_2.avatar}}" style="max-width:50px; max-height:50px">
+                {{response.team.red_2.username}}
+            </li>
+        </ol>
+    </div>
+    <div style="width:50%">
+        <ol>
+            <li><img ng-if="response.team.blue_1.avatar" ng-src="{{response.team.blue_1.avatar}}" style="max-width:50px; max-height:50px">
+                {{response.team.blue_1.username}}
+            </li>
+            <li><img ng-if="response.team.blue_1.avatar" ng-src="{{response.team.blue_2.avatar}}" style="max-width:50px; max-height:50px">
+                {{response.team.blue_2.username}}
+            </li>
+        </ol>
+    </div>
+</div>
+
+</body>
+</html>

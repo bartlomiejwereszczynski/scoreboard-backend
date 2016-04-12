@@ -48,3 +48,7 @@ class MatchViewSet(viewsets.ModelViewSet):
         serializer.save(match=match)
 
         return Response(MatchSerializer(instance=match).data)
+
+
+def index(request):
+    return render(request, template_name='index.html')
